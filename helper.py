@@ -5,7 +5,7 @@ PRODUCTS_FILE = "products.csv"
 WORKING_FILE = "inventory_working.csv"
 
 # Load product catalog
-if ox.path.exists(WORKING_FILE):
+if os.path.exists(WORKING_FILE):
   inventory = pd.read_csv(WORKING_FILE)
   print("Loaded esisting inventory_working.csv - resuming count.")
 else:
