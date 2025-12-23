@@ -1,29 +1,45 @@
 import pandas as pd
+import os
+
+PRODUCTS_FILE = "products.csv"
+WORKING_FILE = "inventory_working.csv"
+
 # Load product catalog
-products = pd.read_csv("products.csv")
+if ox.path.exists(WORKING_FILE):
+  inventory = pd.read_csv(WORKING_FILE)
+  print("Loaded esisting inventory_working.csv - resuming count.")
+else:
+  inventory = pd.read_csv(PRODUCTS_FILE)
+  inventory["Quantity"] = 0
+  inventory.to_csv(WORKING_FILE, index=False)
+  print("Started new inventory count.")
 
-# Add quantity column if not present (change to add quantity counted column)
-if "Quantity" not in products.columns:
-  products["Quantity"] = 0
-
-print("Ready to scan. Type or scan a barcode and press Enter.")
-print("Type 'export' to save CSV, 'exit' to quit.")
+print("\nReady to scan.")
+print("Commands:")
+print(" export to save final csv")
+print(" exit to quit safely\n")
 
 while True:
   barcode = input("> ").strip()
 
   if barcode.lower() == "exit":
+    inventory.to_csv(WORKING_FILE, index=False)
+    print("Progress saved. Safe to exit.")
     break
 
-  if barcode.lowere() == "export":
-    products.to_csv("inventory_count.csv", index=False)
-    print("Inveontory exported to inventory_count.csv")
+  if barcode.lower() == "export":
+    inventory.to_csv("inventory_final.csv", index=False)
+    print("Exported inventory_final.csv")
     continue
 
-  if barcode in products["SKU"].astype(str).values:
-    products.loc[products["SKU"].astype(str) == barcode, "Quantity"] += 1
-    qty = products.loc[products["SKU"].astype(str) == barcode, "Quantity"].values[0]
-    print(f"Scanned {barcode} quantity now {qty}")
+  mask = inventory["SKU"].astype(str) == barcode
 
+  if mask.any():
+    inventory.loc[mask, "Quantity"] += 1
+    inventory.to_csv(WORKING_FILE, index=False) #Auto saves
+    qty = inventory.loc[mask, "Qunatity"].values[0]
+    print(f"Scanned {barcode} quantity is now {qty}")
   else:
-    print(f"Unknown barcode: {barcode}")
+    print(f" Unknown barcode: {barcode}")
+
+  
